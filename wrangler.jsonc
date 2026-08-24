@@ -2,6 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cursorvetolight",
   "main": "./worker/index.ts",
+  "workers_dev": true,
+  "preview_urls": false,
   "compatibility_date": "2026-08-24",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
