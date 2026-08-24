@@ -345,7 +345,8 @@ export default {
     }
 
     if (/^\/https?\/?$/i.test(url.pathname)) {
-      return redirect(`${url.origin}/`, 302);
+      const loginUrl = new URL("/login.html", url);
+      return secure(await env.ASSETS.fetch(new Request(loginUrl, request)));
     }
 
     try {
