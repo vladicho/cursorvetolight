@@ -344,8 +344,8 @@ export default {
       return redirect(`${env.APP_ORIGIN}${url.pathname}${url.search}`, 308);
     }
 
-    if (url.pathname.toLowerCase() === "/http" || url.pathname.toLowerCase() === "/https") {
-      return redirect(url.origin, 308);
+    if (/^\/https?\/?$/i.test(url.pathname)) {
+      return redirect(`${url.origin}/`, 302);
     }
 
     try {
