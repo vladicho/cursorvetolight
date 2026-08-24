@@ -13,13 +13,3 @@ if (oauthError) {
   message.textContent = oauthError;
   message.classList.add("auth-error");
 }
-
-fetch("/api/auth/me", { credentials: "same-origin" })
-  .then((response) => (response.ok ? response.json() : null))
-  .then((data) => {
-    if (data?.ok && data.user?.status === "approved") {
-      window.location.replace(nextPath && nextPath.startsWith("/") ? nextPath : "/");
-    }
-  })
-  .catch(() => {});
-
