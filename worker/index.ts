@@ -97,7 +97,15 @@ function redirect(location: string, status = 302, cookies: string[] = []): Respo
 }
 
 function safeNext(value: string | null): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
+  const pathname = value?.split(/[?#]/, 1)[0].toLowerCase();
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\") ||
+    pathname === "/http" ||
+    pathname === "/https"
+  ) return "/";
   return value;
 }
 
@@ -318,6 +326,10 @@ export default {
     const url = new URL(request.url);
     if (url.hostname === "www.lugarerrado.com") {
       return redirect(`${env.APP_ORIGIN}${url.pathname}${url.search}`, 308);
+    }
+
+    if (url.pathname.toLowerCase() === "/http" || url.pathname.toLowerCase() === "/https") {
+      return redirect(env.APP_ORIGIN, 308);
     }
 
     try {
