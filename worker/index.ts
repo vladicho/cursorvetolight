@@ -105,8 +105,8 @@ function safeNext(value: string | null): string {
     value.includes("\\") ||
     pathname === "/http" ||
     pathname === "/https"
-  ) return "/index.html";
-  if (pathname === "/") return "/index.html";
+  ) return "/";
+  if (pathname === "/" || pathname === "/index.html") return "/";
   return value;
 }
 
@@ -379,6 +379,10 @@ export default {
 
       if (!user) {
         if (url.pathname.startsWith("/api/")) return secure(json({ ok: false, error: "Não autenticado." }, 401));
+        if (url.pathname === "/" || url.pathname === "/index.html") {
+          const loginUrl = new URL("/login.html", url);
+          return secure(await env.ASSETS.fetch(new Request(loginUrl, request)));
+        }
         return secure(redirect(`/login.html?next=${encodeURIComponent(safeNext(url.pathname + url.search))}`));
       }
 
@@ -394,6 +398,7 @@ export default {
         const indexUrl = new URL("/index.html", url);
         return secure(await env.ASSETS.fetch(new Request(indexUrl, request)));
       }
+      if (url.pathname === "/index.html") return secure(redirect("/", 308));
       return secure(await env.ASSETS.fetch(request));
     } catch (error) {
       console.error(JSON.stringify({
