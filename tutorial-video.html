@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MoldeLab - Video tutorial</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="tutorial-page video-page">
+    <main class="video-shell">
+      <header class="video-header">
+        <a class="tutorial-back" href="/"><span>Voltar ao editor</span></a>
+        <a class="tutorial-back" href="tutorial.html"><span>Tutorial escrito</span></a>
+        <div>
+          <h1>Video tutorial do MoldeLab</h1>
+          <p>Uma apresentacao guiada para aprender o fluxo completo: digitalizar, editar, encaixar e exportar.</p>
+        </div>
+      </header>
+
+      <section class="video-stage" aria-label="Video tutorial interativo">
+        <div class="video-frame">
+          <div class="mock-app">
+            <div class="mock-topbar">
+              <span class="mock-brand">M</span>
+              <span class="mock-tab" data-step-tab="arquivo">Arquivo</span>
+              <span class="mock-tab" data-step-tab="tecido">Tecido</span>
+              <span class="mock-tab" data-step-tab="modo">Modo</span>
+              <span class="mock-tab" data-step-tab="digitalizacao">Digitalizacao</span>
+              <span class="mock-tab" data-step-tab="peca">Peca</span>
+            </div>
+            <div class="mock-status">
+              <span>Modo <b id="videoMode">Mover</b></span>
+              <span>Tecido <b id="videoFabric">Plano 150 cm</b></span>
+              <span>Status <b id="videoStatus">Pronto</b></span>
+            </div>
+            <div class="mock-canvas">
+              <div class="mock-fabric"></div>
+              <div class="mock-piece mock-piece-a"></div>
+              <div class="mock-piece mock-piece-b"></div>
+              <div class="mock-piece mock-piece-c"></div>
+              <div class="mock-photo"></div>
+              <div class="mock-marker"></div>
+              <div class="mock-phone"></div>
+              <div class="mock-scan-line"></div>
+              <div class="mock-export"></div>
+            </div>
+          </div>
+          <aside class="video-caption">
+            <span id="videoStepNumber">1/8</span>
+            <h2 id="videoTitle">Comece pelo editor</h2>
+            <p id="videoText">Abra o MoldeLab no Render ou no servidor local. O canvas e o tecido aparecem no centro da tela.</p>
+          </aside>
+        </div>
+
+        <div class="video-progress" aria-hidden="true">
+          <span id="videoProgressBar"></span>
+        </div>
+
+        <div class="video-controls">
+          <button id="videoPrev" type="button"><span>Anterior</span></button>
+          <button id="videoPlay" class="primary" type="button"><span>Pausar</span></button>
+          <button id="videoNext" type="button"><span>Proximo</span></button>
+          <button id="videoVoice" type="button" title="Narração por voz"><span>🔊 Voz: ON</span></button>
+        </div>
+
+        <div class="video-chapters" id="videoChapters" aria-label="Capitulos do tutorial"></div>
+      </section>
+    </main>
+
+    <script>
+      const steps = [
+        {
+          tab: "arquivo",
+          mode: "Mover",
+          fabric: "Plano 150 cm",
+          status: "Pronto",
+          title: "Comece pelo editor",
+          text: "Abra o MoldeLab no Render ou no servidor local. O canvas e o tecido aparecem no centro da tela.",
+          classes: ["show-pieces"],
+        },
+        {
+          tab: "digitalizacao",
+          mode: "Calibrar",
+          fabric: "Plano 150 cm",
+          status: "Imagem carregada",
+          title: "Importe ou capture a imagem",
+          text: "Use uma foto, webcam ou celular. Uma imagem com boa luz e fundo contrastante melhora a digitalizacao.",
+          classes: ["show-photo", "show-phone"],
+        },
+        {
+          tab: "digitalizacao",
+          mode: "Calibrar",
+          fabric: "Plano 150 cm",
+          status: "ArUco detectado",
+          title: "Calibre com ArUco",
+          text: "Informe o tamanho real do marcador e clique em Detectar ArUco para ajustar a escala automaticamente.",
+          classes: ["show-photo", "show-marker", "show-scan"],
+        },
+        {
+          tab: "digitalizacao",
+          mode: "Digitalizar",
+          fabric: "Plano 150 cm",
+          status: "scikit-image",
+          title: "Auto digitalize",
+          text: "Escolha scikit-image para enviar a imagem ao microservico Python e receber um contorno vetorial.",
+          classes: ["show-photo", "show-scan", "show-piece-a"],
+        },
+        {
+          tab: "modo",
+          mode: "Pontos",
+          fabric: "Plano 150 cm",
+          status: "Editando pontos",
+          title: "Ajuste o molde",
+          text: "Entre no modo Pontos, selecione a peca e arraste vertices ate o contorno ficar correto.",
+          classes: ["show-piece-a", "edit-points"],
+        },
+        {
+          tab: "tecido",
+          mode: "Mover",
+          fabric: "Tubular 160 cm",
+          status: "Configurando tecido",
+          title: "Configure tecido e margem",
+          text: "Defina largura, tipo plano ou tubular, margem entre pecas e tempo do encaixe automatico.",
+          classes: ["show-pieces", "wide-fabric"],
+        },
+        {
+          tab: "tecido",
+          mode: "Mover",
+          fabric: "Tubular 160 cm",
+          status: "Encaixe aplicado",
+          title: "Rode o encaixe automatico",
+          text: "O MoldeLab testa combinacoes e posiciona as pecas para aproveitar melhor o tecido.",
+          classes: ["show-pieces", "nested"],
+        },
+        {
+          tab: "arquivo",
+          mode: "Mover",
+          fabric: "Tubular 160 cm",
+          status: "Exportar",
+          title: "Exporte o resultado",
+          text: "Salve o projeto ou exporte SVG, DXF, PLT e mini risco JPG para producao e conferencia.",
+          classes: ["show-pieces", "nested", "show-export"],
+        },
+      ];
+
+      const stage = document.querySelector(".video-stage");
+      const chapters = document.querySelector("#videoChapters");
+      const title = document.querySelector("#videoTitle");
+      const text = document.querySelector("#videoText");
+      const number = document.querySelector("#videoStepNumber");
+      const progress = document.querySelector("#videoProgressBar");
+      const play = document.querySelector("#videoPlay");
+      const prev = document.querySelector("#videoPrev");
+      const next = document.querySelector("#videoNext");
+      const voiceBtn = document.querySelector("#videoVoice");
+      const videoMode = document.querySelector("#videoMode");
+      const videoFabric = document.querySelector("#videoFabric");
+      const videoStatus = document.querySelector("#videoStatus");
+
+      let current = 0;
+      let playing = true;
+      let timer = null;
+      let voiceEnabled = true;
+
+      // --- TTS ---
+      const synth = window.speechSynthesis;
+
+      function getVoicePT() {
+        const voices = synth.getVoices();
+        return (
+          voices.find(v => v.lang === "pt-BR") ||
+          voices.find(v => v.lang.startsWith("pt")) ||
+          voices[0] ||
+          null
+        );
+      }
+
+      function speak(stepText) {
+        if (!voiceEnabled || !synth) return;
+        synth.cancel();
+        const utterance = new SpeechSynthesisUtterance(stepText);
+        utterance.lang = "pt-BR";
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        const voice = getVoicePT();
+        if (voice) utterance.voice = voice;
+        synth.speak(utterance);
+      }
+
+      // Carregar vozes (necessário em alguns browsers)
+      if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = () => {};
+      }
+
+      // --- Chapters ---
+      steps.forEach((step, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = `${index + 1}. ${step.title}`;
+        button.addEventListener("click", () => showStep(index, false));
+        chapters.appendChild(button);
+      });
+
+      function showStep(index, keepPlaying = playing) {
+        current = (index + steps.length) % steps.length;
+        const step = steps[current];
+        stage.className = `video-stage ${step.classes.join(" ")}`;
+        document.querySelectorAll("[data-step-tab]").forEach((item) => {
+          item.classList.toggle("active", item.dataset.stepTab === step.tab);
+        });
+        title.textContent = step.title;
+        text.textContent = step.text;
+        number.textContent = `${current + 1}/${steps.length}`;
+        videoMode.textContent = step.mode;
+        videoFabric.textContent = step.fabric;
+        videoStatus.textContent = step.status;
+        progress.style.width = `${((current + 1) / steps.length) * 100}%`;
+        [...chapters.children].forEach((item, itemIndex) =>
+          item.classList.toggle("active", itemIndex === current)
+        );
+        playing = keepPlaying;
+        play.querySelector("span").textContent = playing ? "Pausar" : "Reproduzir";
+        restartTimer();
+        speak(`${step.title}. ${step.text}`);
+      }
+
+      function restartTimer() {
+        window.clearInterval(timer);
+        if (playing) timer = window.setInterval(() => showStep(current + 1, true), 5200);
+      }
+
+      // --- Controles ---
+      play.addEventListener("click", () => {
+        if (playing) synth.cancel();
+        showStep(current, !playing);
+      });
+
+      prev.addEventListener("click", () => showStep(current - 1, false));
+      next.addEventListener("click", () => showStep(current + 1, false));
+
+      voiceBtn.addEventListener("click", () => {
+        voiceEnabled = !voiceEnabled;
+        voiceBtn.querySelector("span").textContent = voiceEnabled ? "🔊 Voz: ON" : "🔇 Voz: OFF";
+        if (!voiceEnabled) synth.cancel();
+      });
+
+      showStep(0, true);
+    </script>
+  </body>
+</html>
+

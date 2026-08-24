@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MoldeLab - Tutorial de uso</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="tutorial-page">
+    <main class="tutorial-shell">
+      <header class="tutorial-header">
+        <a class="tutorial-back" href="/"><span>Voltar ao editor</span></a>
+        <a class="tutorial-back" href="tutorial-video.html"><span>Ver video tutorial</span></a>
+        <div>
+          <h1>Tutorial de uso do MoldeLab</h1>
+          <p>Fluxo pratico para digitalizar, editar, encaixar e exportar moldes.</p>
+        </div>
+      </header>
+
+      <section class="tutorial-content">
+        <div class="tutorial-visual">
+          <div class="annotated-screen">
+            <div class="annotated-topbar">
+              <span class="annotated-brand">M</span>
+              <span class="annotated-menu" data-callout="arquivo">Arquivo</span>
+              <span class="annotated-menu" data-callout="tecido">Tecido</span>
+              <span class="annotated-menu" data-callout="modo">Modo</span>
+              <span class="annotated-menu" data-callout="digitalizacao">Digitalizacao</span>
+              <span class="annotated-menu" data-callout="peca">Peca</span>
+            </div>
+            <div class="annotated-status">Modo: Mover | Tecido: Plano 150 cm | Status: Pronto</div>
+            <div class="annotated-canvas">
+              <div class="annotated-fabric"></div>
+              <div class="annotated-piece"></div>
+              <div class="callout callout-file"><b>1</b><span>Arquivo: abrir, salvar, exportar e tutorial</span></div>
+              <div class="callout callout-digitize"><b>2</b><span>Digitalizacao: foto, camera, ArUco e scikit-image</span></div>
+              <div class="callout callout-canvas"><b>3</b><span>Canvas: editar pecas, pontos e encaixe</span></div>
+              <div class="callout callout-piece"><b>4</b><span>Peca: nome, tamanho, cor, fio e piques</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h2>1. Abrir o editor</h2>
+        <p>No Render, abra a URL principal do servico <strong>moldelab</strong>. No Windows/local, execute <code>abrir-moldelab.cmd</code> e acesse <code>http://localhost:8787</code>.</p>
+
+        <h2>2. Conhecer a tela</h2>
+        <ul>
+          <li><strong>Arquivo</strong>: abrir projeto, importar vetor, exportar arquivos e abrir este tutorial.</li>
+          <li><strong>Tecido</strong>: configurar largura, tipo de tecido, grade e encaixe automatico.</li>
+          <li><strong>Modo</strong>: mover, editar pontos, desenhar, calibrar, digitalizar, pan e medir.</li>
+          <li><strong>Digitalizacao</strong>: imagem, camera, celular, ArUco e scikit-image.</li>
+          <li><strong>Peca</strong>: nome, modelo, tamanho, cor, margem de costura, fio, piques e bloqueio.</li>
+        </ul>
+
+        <h2>3. Criar uma peca manual</h2>
+        <p>Abra <strong>Modo</strong>, clique em <strong>Desenhar</strong>, marque os pontos no canvas e finalize em <strong>Editar &gt; Fechar contorno</strong>.</p>
+
+        <h2>4. Editar pontos</h2>
+        <p>Selecione uma peca, entre em <strong>Modo &gt; Pontos</strong> e arraste os pontos. Para remover, selecione um ponto e use <strong>Peca &gt; Apagar ponto</strong>.</p>
+
+        <h2>4.1. Graduacao manual</h2>
+        <p>Duplique a peca base, selecione um ponto em <strong>Modo &gt; Pontos</strong>, defina o <strong>Passo graduacao (cm)</strong> em <strong>Peca</strong> e use os botoes <strong>Cima</strong>, <strong>Baixo</strong>, <strong>Esquerda</strong> e <strong>Direita</strong>. O ajuste e manual, ponto por ponto.</p>
+
+        <h2>5. Importar vetor</h2>
+        <p>Em <strong>Arquivo &gt; Importar vetor</strong>, escolha um arquivo <code>.svg</code>, <code>.dxf</code> ou <code>.plt</code>. O MoldeLab cria pecas a partir dos caminhos encontrados.</p>
+
+        <h2>6. Digitalizar por imagem</h2>
+        <div class="tutorial-shot shot-digitize">
+          <div class="shot-menu">
+            <strong>Digitalizacao</strong>
+            <span>Foto ou scan do molde</span>
+            <span>Medida de referencia (cm)</span>
+            <span>Motor de digitalizacao</span>
+            <span>Detectar ArUco</span>
+            <span>Auto digitalizar</span>
+          </div>
+          <div class="shot-preview">
+            <div class="shot-photo"></div>
+            <div class="shot-arrow arrow-import"><span>Importe a foto aqui</span></div>
+            <div class="shot-arrow arrow-scale"><span>Depois calibre a medida</span></div>
+            <div class="shot-arrow arrow-auto"><span>Por fim use Auto digitalizar</span></div>
+          </div>
+        </div>
+        <ol>
+          <li>Abra <strong>Digitalizacao</strong>.</li>
+          <li>Escolha uma foto ou scan do molde.</li>
+          <li>Informe a medida de referencia em centimetros.</li>
+          <li>Clique dois pontos da imagem que correspondem a essa medida.</li>
+          <li>Use <strong>Auto digitalizar</strong> ou marque o contorno manualmente.</li>
+        </ol>
+
+        <h2>7. Camera e celular</h2>
+        <p>Para webcam, use <strong>Abrir camera</strong> e depois <strong>Capturar</strong>. Para celular, leia o QR Code, enquadre o molde e clique em <strong>Capturar do celular</strong> no editor.</p>
+
+        <h2>8. ArUco</h2>
+        <div class="tutorial-shot shot-aruco">
+          <div class="shot-preview">
+            <div class="shot-photo large"></div>
+            <div class="shot-marker"></div>
+            <div class="shot-arrow arrow-marker"><span>Marcador com tamanho conhecido</span></div>
+            <div class="shot-arrow arrow-contour"><span>Molde junto na mesma foto</span></div>
+          </div>
+          <div class="shot-menu">
+            <strong>ArUco</strong>
+            <span>Marcador ArUco (cm): 5</span>
+            <span>Detectar ArUco</span>
+            <span>Motor: ArUco + OpenCV</span>
+          </div>
+        </div>
+        <p>Coloque um marcador ArUco ou quadrado preto na foto, informe o tamanho real em <strong>Marcador ArUco (cm)</strong> e clique em <strong>Detectar ArUco</strong>. Depois use <strong>Auto digitalizar</strong>.</p>
+
+        <h2>9. scikit-image</h2>
+        <div class="tutorial-shot shot-skimage">
+          <div class="shot-flow">
+            <div>Editor<br /><small>moldelab</small></div>
+            <span></span>
+            <div>Microservico<br /><small>moldelab-skimage</small></div>
+            <span></span>
+            <div>Contorno<br /><small>pontos vetoriais</small></div>
+          </div>
+          <div class="shot-arrow arrow-service"><span>O app envia a imagem e recebe o contorno pronto</span></div>
+        </div>
+        <p>Escolha <strong>scikit-image</strong> em <strong>Motor de digitalizacao</strong> e clique em <strong>Auto digitalizar</strong>. O app envia a imagem para o microservico Python <strong>moldelab-skimage</strong> e recebe o contorno real. No Render free, a primeira chamada pode demorar se o servico estiver dormindo.</p>
+
+        <h2>10. Configurar tecido</h2>
+        <p>Em <strong>Tecido</strong>, defina tipo, largura, margem entre pecas, grade e tempo do encaixe.</p>
+
+        <h2>11. Encaixe automatico</h2>
+        <div class="tutorial-shot shot-nesting">
+          <div class="nest-before">
+            <strong>Antes</strong>
+            <i></i><i></i><i></i>
+          </div>
+          <div class="shot-arrow arrow-nest"><span>Encaixe automatico organiza as pecas</span></div>
+          <div class="nest-after">
+            <strong>Depois</strong>
+            <i></i><i></i><i></i>
+          </div>
+        </div>
+        <p>Depois de criar/importar pecas, abra <strong>Tecido</strong> e clique em <strong>Encaixe automatico</strong>. O app testa combinacoes e aplica o melhor encaixe encontrado.</p>
+
+        <h2>12. Exportar</h2>
+        <p>Em <strong>Arquivo</strong>, use <strong>Salvar projeto</strong>, <strong>Exportar SVG</strong>, <strong>Exportar DXF</strong>, <strong>Exportar PLT</strong> ou <strong>Mini risco JPG</strong>.</p>
+
+        <h2>Dicas rapidas</h2>
+        <ul>
+          <li><strong>Ctrl+S</strong>: salvar projeto.</li>
+          <li><strong>Ctrl+Z</strong>: desfazer.</li>
+          <li><strong>Delete</strong>: apagar ponto ou peca selecionada.</li>
+          <li><strong>F</strong>: ajustar a tela.</li>
+          <li><strong>G</strong>: mostrar ou ocultar grade.</li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
+

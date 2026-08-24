@@ -1,0 +1,19 @@
+{
+  "name": "cursorvetolight",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MoldeLab Light para Cloudflare com scikit-image no navegador",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build-frontend.js",
+    "deploy": "npm run build && wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.8",
+    "wrangler": "^4.33.1"
+  }
+}
+

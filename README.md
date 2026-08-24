@@ -61,3 +61,4 @@ mas nao envia a foto para esse CDN.
 
 Derivado de [vladicho/cursorveto](https://github.com/vladicho/cursorveto) para
 experimentacao e distribuicao no Cloudflare Free.
+

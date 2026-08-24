@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MoldeLab - Nesting Vetorial</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-light-mode="true">
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar canvas-ribbon">
+          <div class="brand compact-brand">
+            <span class="brand-mark">M</span>
+            <div>
+              <h1>MoldeLab</h1>
+              <p>Editor vetorial de encaixe</p>
+            </div>
+          </div>
+          <div class="main-menu">
+            <details class="menu-dropdown">
+              <summary><i data-lucide="folder"></i><span>Arquivo</span></summary>
+              <div class="menu-list menu-form">
+                <label>
+                  Nome do projeto
+                  <input id="projectName" type="text" value="MoldeLab Projeto" />
+                </label>
+                <label>
+                  Abrir projeto
+                  <input id="projectInput" type="file" accept=".moldelab.json,application/json" />
+                </label>
+                <label>
+                  Importar vetor
+                  <input id="vectorInput" type="file" accept=".svg,.dxf,.plt" />
+                </label>
+                <button id="saveProject"><i data-lucide="save"></i><span>Salvar projeto</span><kbd>Ctrl+S</kbd></button>
+                <button id="exportSvg"><i data-lucide="file-code"></i><span>Exportar SVG</span></button>
+                <button id="exportDxf"><i data-lucide="file-down"></i><span>Exportar DXF</span></button>
+                <button id="exportPlt"><i data-lucide="printer"></i><span>Exportar PLT</span></button>
+                <button id="exportMiniMarker"><i data-lucide="image"></i><span>Mini risco JPG</span></button>
+                <a class="menu-link" href="tutorial-video.html" target="_blank" rel="noopener"><i data-lucide="play-circle"></i><span>Video tutorial</span></a>
+                <a class="menu-link" href="tutorial.html" target="_blank" rel="noopener"><i data-lucide="book-open"></i><span>Tutorial de uso</span></a>
+                <div id="importStatus" class="status-line">SVG, DXF e PLT/HPGL2 importaveis. ADS precisa de amostras.</div>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="layers"></i><span>Tecido</span></summary>
+              <div class="menu-list menu-form">
+                <label>
+                  Tipo de tecido
+                  <select id="fabricType">
+                    <option value="flat">Plano</option>
+                    <option value="tubular">Tubular</option>
+                  </select>
+                </label>
+                <label>
+                  Largura do tecido
+                  <input id="fabricWidth" type="number" min="80" max="240" step="5" value="150" />
+                </label>
+                <label>
+                  Margem entre pecas
+                  <input id="spacing" type="number" min="0" max="10" step="0.5" value="0" />
+                </label>
+                <label>
+                  Tempo do encaixe (s)
+                  <input id="nestingTimer" type="number" min="1" max="60" step="1" value="3" />
+                </label>
+                <label class="inline-check">
+                  <input id="separateNestingsBySize" type="checkbox" />
+                  Separar encaixes por tamanho
+                </label>
+                <label class="inline-check">
+                  <input id="snapToGrid" type="checkbox" />
+                  Ajustar a grade
+                </label>
+                <label class="inline-check">
+                  <input id="showGrid" type="checkbox" checked />
+                  Mostrar grade
+                </label>
+                <label>
+                  Passo da grade (cm)
+                  <input id="gridStep" type="number" min="0.1" max="10" step="0.1" value="1" />
+                </label>
+                <button id="autoNest" class="primary" data-keep-menu-open="true"><i data-lucide="sparkles"></i><span>Encaixe automatico</span></button>
+                <button id="cancelNest" type="button" data-keep-menu-open="true" title="Interromper encaixe" disabled><i data-lucide="square"></i><span>Interromper encaixe</span><kbd>Esc</kbd></button>
+                <progress id="nestingProgressBar" class="nesting-progress-bar" max="100" value="0" hidden></progress>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="mouse-pointer-2"></i><span>Modo</span></summary>
+              <div class="menu-list">
+                <button id="modeMove" class="active" title="Mover pecas"><i data-lucide="move"></i><span>Mover</span><kbd>M</kbd></button>
+                <button id="modePoints" title="Editar pontos"><i data-lucide="mouse-pointer-2"></i><span>Pontos</span><kbd>P</kbd></button>
+                <button id="modeDraw" title="Criar molde do zero"><i data-lucide="pen-tool"></i><span>Desenhar</span><kbd>D</kbd></button>
+                <button id="modeCalibrate" title="Calibrar imagem"><i data-lucide="scan-line"></i><span>Calibrar</span><kbd>C</kbd></button>
+                <button id="modeTrace" title="Contornar molde"><i data-lucide="scan"></i><span>Digitalizar</span><kbd>T</kbd></button>
+                <button id="modePan" title="Mover tela"><i data-lucide="hand"></i><span>Pan</span><kbd>H</kbd></button>
+                <button id="modeMeasure" title="Medir distancia em centimetros"><i data-lucide="ruler"></i><span>Medir</span><kbd>R</kbd></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="eye"></i><span>Visualizar</span></summary>
+              <div class="menu-list">
+                <button id="zoomOut" title="Diminuir zoom"><i data-lucide="zoom-out"></i><span>Diminuir zoom</span><kbd>-</kbd></button>
+                <button id="resetView" title="Centralizar"><i data-lucide="maximize"></i><span>Centralizar 100%</span><kbd>0</kbd></button>
+                <button id="fitView" title="Ajustar pecas a tela"><i data-lucide="scan-search"></i><span>Ajustar a tela</span><kbd>F</kbd></button>
+                <button id="zoomIn" title="Aumentar zoom"><i data-lucide="zoom-in"></i><span>Aumentar zoom</span><kbd>+</kbd></button>
+                <button id="toggleGrid" title="Mostrar ou ocultar grade"><i data-lucide="grid-2x2"></i><span>Mostrar grade</span><kbd>G</kbd></button>
+                <button id="toggleFloatingToolbar" title="Mostrar ou ocultar icones perto da peca"><i data-lucide="panel-top-open"></i><span>Icones na peca</span></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="edit-3"></i><span>Editar</span></summary>
+              <div class="menu-list">
+                <button id="undoAction" title="Desfazer"><i data-lucide="undo-2"></i><span>Desfazer</span><kbd>Ctrl+Z</kbd></button>
+                <button id="redoAction" title="Refazer"><i data-lucide="redo-2"></i><span>Refazer</span><kbd>Ctrl+Y</kbd></button>
+                <button id="copyPiece"><i data-lucide="copy"></i><span>Copiar peca</span><kbd>Ctrl+C</kbd></button>
+                <button id="pastePiece"><i data-lucide="clipboard-paste"></i><span>Colar peca</span><kbd>Ctrl+V</kbd></button>
+                <button id="finishTrace" title="Criar peca do contorno"><i data-lucide="check"></i><span>Fechar contorno</span></button>
+                <button id="addPiece"><i data-lucide="plus"></i><span>Nova peca</span><kbd>N</kbd></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="scan-line"></i><span>Digitalizacao</span></summary>
+              <div class="menu-list menu-form">
+                <label>
+                  Foto ou scan do molde
+                  <input id="imageInput" type="file" accept="image/*" />
+                </label>
+                <video id="cameraPreview" class="camera-preview" playsinline muted hidden></video>
+                <div class="camera-actions">
+                  <button id="startCamera" type="button"><i data-lucide="camera"></i><span>Abrir camera</span></button>
+                  <button id="captureCamera" type="button" disabled><i data-lucide="scan-line"></i><span>Capturar</span></button>
+                  <button id="stopCamera" type="button" disabled><i data-lucide="camera-off"></i><span>Fechar</span></button>
+                </div>
+                <div class="scanner-panel">
+                  <button id="requestScannerFrame" type="button" disabled><i data-lucide="smartphone"></i><span>Capturar do celular</span></button>
+                  <small id="scannerStatus">Scanner local desconectado.</small>
+                  <img id="scannerQr" alt="QR Code do scanner mobile" hidden />
+                  <small id="scannerUrl"></small>
+                </div>
+                <label>
+                  Medida de referencia (cm)
+                  <input id="calibrationLength" type="number" min="1" max="200" step="0.5" value="10" />
+                </label>
+                <label>
+                  Motor de digitalizacao
+                  <select id="digitizeEngine">
+                    <option value="local">JS local</option>
+                    <option value="opencv">OpenCV</option>
+                    <option value="scikit">scikit-image</option>
+                    <option value="aruco">ArUco + OpenCV</option>
+                  </select>
+                </label>
+                <label>
+                  Marcador ArUco (cm)
+                  <input id="arucoMarkerSize" type="number" min="1" max="50" step="0.5" value="5" />
+                </label>
+                <button id="detectAruco" type="button"><i data-lucide="scan-search"></i><span>Detectar ArUco</span></button>
+                <button id="autoTrace" type="button"><i data-lucide="wand-sparkles"></i><span>Auto digitalizar</span></button>
+                <div id="digitizeStatus" class="status-line">Importe uma imagem para comecar.</div>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="move-3d"></i><span>Transformar</span></summary>
+              <div class="menu-list">
+                <button id="rotateLeft" title="Girar 15 graus para esquerda"><i data-lucide="rotate-ccw"></i><span>Girar -15 graus</span></button>
+                <button id="rotateRight" title="Girar 15 graus para direita"><i data-lucide="rotate-cw"></i><span>Girar +15 graus</span></button>
+                <button id="mirrorPiece" title="Espelhar peca"><i data-lucide="flip-horizontal"></i><span>Espelhar peca</span></button>
+                <button id="fitPieceOrigin"><i data-lucide="corner-up-left"></i><span>Na origem</span></button>
+                <button id="centerPieceWidth"><i data-lucide="align-horizontal-justify-center"></i><span>Centralizar largura</span></button>
+                <button id="alignPieceLeft"><i data-lucide="align-horizontal-justify-start"></i><span>Encostar esquerda</span></button>
+                <button id="alignPieceTop"><i data-lucide="align-vertical-justify-start"></i><span>Encostar topo</span></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="scissors"></i><span>Peca</span></summary>
+              <div class="menu-list menu-form piece-menu">
+                <div id="selectionName" class="selected-name">Nenhuma peca</div>
+                <div id="pieceStats" class="piece-stats"></div>
+                <label>
+                  Nome da peca
+                  <input id="pieceName" type="text" value="" />
+                </label>
+                <label>
+                  Modelo
+                  <input id="pieceModel" type="text" value="" placeholder="Ex: Calca jeans" />
+                </label>
+                <label>
+                  Tamanho
+                  <input id="pieceSize" type="text" value="" placeholder="Ex: 40, M, GG" />
+                </label>
+                <label>
+                  Cor da peca
+                  <input id="pieceColor" type="color" value="#0891b2" />
+                </label>
+                <label>
+                  Margem de costura (cm)
+                  <input id="seamAllowance" type="number" min="0" max="8" step="0.1" value="0" />
+                </label>
+                <label>
+                  Rotacao
+                  <input id="rotation" type="range" min="0" max="345" step="15" value="0" />
+                </label>
+                <label>
+                  Sentido do fio
+                  <select id="grainAngle">
+                    <option value="0">0 graus</option>
+                    <option value="45">45 graus</option>
+                    <option value="90">90 graus</option>
+                    <option value="135">135 graus</option>
+                    <option value="180">180 graus</option>
+                    <option value="360">360 graus</option>
+                  </select>
+                </label>
+                <button id="duplicatePiece"><i data-lucide="copy"></i><span>Duplicar peca</span><kbd>Ctrl+D</kbd></button>
+                <button id="deletePiece"><i data-lucide="trash-2"></i><span>Apagar peca</span><kbd>Del</kbd></button>
+                <button id="toggleLockPiece"><i data-lucide="lock"></i><span>Bloquear peca</span></button>
+                <button id="addNotch"><i data-lucide="circle-plus"></i><span>Adicionar pique</span></button>
+                <button id="deleteNotch"><i data-lucide="circle-minus"></i><span>Apagar pique</span></button>
+                <button id="deletePoint"><i data-lucide="circle-x"></i><span>Apagar ponto</span><kbd>Del</kbd></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="move-horizontal"></i><span>Graduacao</span></summary>
+              <div class="menu-list menu-form grading-menu">
+                <div class="selected-name">Mover ponto selecionado</div>
+                <label>
+                  Passo graduacao (cm)
+                  <input id="gradingStep" type="number" min="0.1" max="20" step="0.1" value="0.5" />
+                </label>
+                <div class="grading-pad" aria-label="Graduacao manual do ponto selecionado">
+                  <button id="gradeUp" type="button" title="Graduar ponto para cima"><i data-lucide="arrow-up"></i><span>Cima</span></button>
+                  <button id="gradeLeft" type="button" title="Graduar ponto para esquerda"><i data-lucide="arrow-left"></i><span>Esquerda</span></button>
+                  <button id="gradeRight" type="button" title="Graduar ponto para direita"><i data-lucide="arrow-right"></i><span>Direita</span></button>
+                  <button id="gradeDown" type="button" title="Graduar ponto para baixo"><i data-lucide="arrow-down"></i><span>Baixo</span></button>
+                </div>
+                <div class="status-line">Use Modo &gt; Pontos, selecione um ponto e mova em centimetros.</div>
+                <div class="menu-divider"></div>
+                <div class="selected-name">Copiar para graduar</div>
+                <label>
+                  Tamanho da copia
+                  <input id="gradeCopySize" type="text" value="G" />
+                </label>
+                <label>
+                  Cor da copia
+                  <input id="gradeCopyColor" type="color" value="#dc2626" />
+                </label>
+                <button id="createGradeCopy" type="button"><i data-lucide="layers-2"></i><span>Graduar copia sobreposta</span></button>
+                <div class="menu-divider"></div>
+                <div class="selected-name">Graduar via tabela</div>
+                <label>
+                  N ponto
+                  <input id="gradePointNumber" type="text" value="-" readonly />
+                </label>
+                <div class="grading-table" aria-label="Tabela de graduacao por ponto">
+                  <div class="grading-table-head">Tam.</div>
+                  <div class="grading-table-head">DX cm</div>
+                  <div class="grading-table-head">DY cm</div>
+                  <input class="grade-table-size grade-row-0" data-grade-row="0" value="P" aria-label="Tamanho 1" />
+                  <input class="grade-table-dx grade-row-0" data-grade-row="0" type="number" step="0.1" value="-1" aria-label="DX tamanho 1" />
+                  <input class="grade-table-dy grade-row-0" data-grade-row="0" type="number" step="0.1" value="-1" aria-label="DY tamanho 1" />
+                  <input class="grade-table-size grade-row-1" data-grade-row="1" value="M" aria-label="Tamanho base" />
+                  <input class="grade-table-dx grade-row-1" data-grade-row="1" type="number" step="0.1" value="0" aria-label="DX base" />
+                  <input class="grade-table-dy grade-row-1" data-grade-row="1" type="number" step="0.1" value="0" aria-label="DY base" />
+                  <input class="grade-table-size grade-row-2" data-grade-row="2" value="G" aria-label="Tamanho 3" />
+                  <input class="grade-table-dx grade-row-2" data-grade-row="2" type="number" step="0.1" value="1" aria-label="DX tamanho 3" />
+                  <input class="grade-table-dy grade-row-2" data-grade-row="2" type="number" step="0.1" value="1" aria-label="DY tamanho 3" />
+                </div>
+                <label class="check-row">
+                  <input id="gradeIncremental" type="checkbox" checked />
+                  Incremental
+                </label>
+                <label>
+                  Incremento (cm)
+                  <input id="gradeIncrement" type="number" min="0.1" max="20" step="0.1" value="1" />
+                </label>
+                <div class="grading-nudge" aria-label="Ajustar DX e DY da linha selecionada">
+                  <button id="gradeTableUp" type="button" title="Diminuir DY"><i data-lucide="arrow-up"></i><span>Cima</span></button>
+                  <button id="gradeTableLeft" type="button" title="Diminuir DX"><i data-lucide="arrow-left"></i><span>Esquerda</span></button>
+                  <button id="gradeTableZero" type="button" title="Zerar linha"><span>0</span></button>
+                  <button id="gradeTableRight" type="button" title="Aumentar DX"><i data-lucide="arrow-right"></i><span>Direita</span></button>
+                  <button id="gradeTableDown" type="button" title="Aumentar DY"><i data-lucide="arrow-down"></i><span>Baixo</span></button>
+                </div>
+                <button id="applyGradeTable" type="button"><i data-lucide="table-2"></i><span>Aplicar tabela no ponto</span></button>
+              </div>
+            </details>
+            <details class="menu-dropdown">
+              <summary><i data-lucide="list"></i><span>Lista</span></summary>
+              <div class="menu-list menu-form list-menu">
+                <div id="pieceList" class="piece-list"></div>
+              </div>
+            </details>
+            
+            </details>
+          </div>
+            <div id="userMenu" hidden style="margin-left:auto; display:flex; align-items:center; gap:8px; padding:0 8px;">
+              <span id="userLabel" style="font-size:0.85rem; color:#4b5563; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+              <a id="adminLink" href="/admin.html" hidden style="font-size:0.82rem; color:#0891b2; text-decoration:none; font-weight:700;">Admin</a>
+              <button id="logoutBtn" style="font-size:0.82rem; padding:4px 10px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:6px; cursor:pointer; color:#374151;">Sair</button>
+            </div>
+        </header>
+        <div class="tabbar" id="tabbar" aria-label="Projetos abertos">
+          <div class="tab-list" id="tabList" role="tablist"></div>
+          <button class="tab-new" id="tabNew" type="button" title="Novo projeto"><i data-lucide="plus"></i></button>
+        </div>
+        <div class="statusbar">
+          <span>Modo <b id="statusMode">Mover</b></span>
+          <span>Peca <b id="statusPiece">Frente corpo</b></span>
+          <span>Tecido <b id="statusFabric">Plano 150 cm</b></span>
+          <span>Zoom <b id="statusZoom">100%</b></span>
+          <span>Cursor <b id="statusCursor">-</b></span>
+          <button id="toggleMarkerHeader" class="status-action" type="button" aria-controls="markerHeader" aria-expanded="false" title="Mostrar cabecalho"><i data-lucide="table-2"></i><span>Cabecalho</span><kbd>Ctrl+H</kbd></button>
+          <span class="status-message"><b id="statusMessage">Pronto.</b></span>
+        </div>
+        <section id="markerHeader" class="marker-header" aria-label="Cabecario do risco" hidden>
+          <table>
+            <colgroup>
+              <col class="marker-col-sm" />
+              <col class="marker-col-md" />
+              <col class="marker-col-md" />
+              <col class="marker-col-md" />
+              <col class="marker-col-sm" />
+              <col class="marker-col-lg" />
+              <col class="marker-col-lg" />
+              <col class="marker-col-lg" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th title="Largura">Largura</th>
+                <th title="Comprimento">Comprimento</th>
+                <th title="Pecas encaixadas">Pecas encaixadas</th>
+                <th title="Aproveitamento">Aproveitamento</th>
+                <th title="Grade">Grade</th>
+                <th title="Modelos">Modelos</th>
+                <th title="Arquivo">Arquivo</th>
+                <th title="Status">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td id="headerWidth" class="marker-number">150 cm</td>
+                <td id="headerLength" class="marker-number">0 cm</td>
+                <td id="headerPieces" class="marker-number">0</td>
+                <td id="headerEfficiency" class="marker-number">0%</td>
+                <td id="headerGrade">-</td>
+                <td id="headerModels">-</td>
+                <td id="headerFile">moldelab-projeto.moldelab.json</td>
+                <td id="headerStatus">OK</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <div class="canvas-wrap">
+          <canvas id="canvas" width="1280" height="760"></canvas>
+          <div id="floatingPieceToolbar" class="floating-piece-toolbar" hidden>
+            <button data-float-action="move" title="Mover"><i data-lucide="move"></i><span>Mover</span></button>
+            <button data-float-action="points" title="Pontos"><i data-lucide="mouse-pointer-2"></i><span>Pontos</span></button>
+            <button data-float-action="copy" title="Copiar"><i data-lucide="copy"></i><span>Copiar</span></button>
+            <button data-float-action="duplicate" title="Duplicar"><i data-lucide="clipboard-copy"></i><span>Duplicar</span></button>
+            <button data-float-action="grade-copy" title="Graduar copia sobreposta"><i data-lucide="layers-2"></i><span>Graduar</span></button>
+            <button data-float-action="lock" title="Bloquear"><i data-lucide="lock"></i><span>Bloquear</span></button>
+            <button data-float-action="rotate-left" title="Girar esquerda"><i data-lucide="rotate-ccw"></i><span>Girar esquerda</span></button>
+            <button data-float-action="rotate-right" title="Girar direita"><i data-lucide="rotate-cw"></i><span>Girar direita</span></button>
+            <button data-float-action="mirror" title="Espelhar"><i data-lucide="flip-horizontal"></i><span>Espelhar</span></button>
+            <button data-float-action="grade-left" title="Graduar esquerda"><i data-lucide="arrow-left"></i><span>Graduar esquerda</span></button>
+            <button data-float-action="grade-right" title="Graduar direita"><i data-lucide="arrow-right"></i><span>Graduar direita</span></button>
+            <button data-float-action="grade-up" title="Graduar cima"><i data-lucide="arrow-up"></i><span>Graduar cima</span></button>
+            <button data-float-action="grade-down" title="Graduar baixo"><i data-lucide="arrow-down"></i><span>Graduar baixo</span></button>
+          </div>
+        </div>
+          <div class="canvas-scrollbars">
+            <div class="scroll-track scroll-x"><div id="scrollThumbX" class="scroll-thumb"></div></div>
+            <div class="scroll-track scroll-y"><div id="scrollThumbY" class="scroll-thumb"></div></div>
+          </div>
+        <div id="pieceContextMenu" class="context-menu" hidden>
+          <button data-context-action="duplicate"><i data-lucide="copy"></i><span>Duplicar peca</span></button>
+          <button data-context-action="copy"><i data-lucide="clipboard-copy"></i><span>Copiar peca</span></button>
+          <button data-context-action="grade-copy"><i data-lucide="layers-2"></i><span>Graduar copia</span></button>
+          <button data-context-action="delete"><i data-lucide="trash-2"></i><span>Apagar peca</span></button>
+          <button data-context-action="lock"><i data-lucide="lock"></i><span>Bloquear peca</span></button>
+          <button data-context-action="rotate-left"><i data-lucide="rotate-ccw"></i><span>Girar -15 graus</span></button>
+          <button data-context-action="rotate-right"><i data-lucide="rotate-cw"></i><span>Girar +15 graus</span></button>
+          <button data-context-action="mirror"><i data-lucide="flip-horizontal"></i><span>Espelhar peca</span></button>
+          <button data-context-action="origin"><i data-lucide="corner-up-left"></i><span>Na origem</span></button>
+          <button data-context-action="center-width"><i data-lucide="align-horizontal-justify-center"></i><span>Centralizar largura</span></button>
+          <button data-context-action="left"><i data-lucide="align-horizontal-justify-start"></i><span>Encostar esquerda</span></button>
+          <button data-context-action="top"><i data-lucide="align-vertical-justify-start"></i><span>Encostar topo</span></button>
+          <button data-context-action="add-notch"><i data-lucide="circle-plus"></i><span>Adicionar pique</span></button>
+          <button data-context-action="delete-notch"><i data-lucide="circle-minus"></i><span>Apagar pique</span></button>
+          <button data-context-action="delete-point"><i data-lucide="circle-x"></i><span>Apagar ponto</span></button>
+        </div>
+        <div id="canvasContextMenu" class="context-menu" hidden>
+          <button data-canvas-action="add-piece"><i data-lucide="plus"></i><span>Nova peca</span></button>
+          <button data-canvas-action="paste-piece"><i data-lucide="clipboard-paste"></i><span>Colar peca</span></button>
+          <button data-canvas-action="auto-nest"><i data-lucide="sparkles"></i><span>Encaixe automatico</span></button>
+          <button data-canvas-action="draw"><i data-lucide="pen-tool"></i><span>Desenhar molde</span></button>
+          <button data-canvas-action="measure"><i data-lucide="ruler"></i><span>Medir distancia</span></button>
+          <button data-canvas-action="pan"><i data-lucide="hand"></i><span>Mover tela</span></button>
+          <button data-canvas-action="zoom-in"><i data-lucide="zoom-in"></i><span>Aumentar zoom</span></button>
+          <button data-canvas-action="zoom-out"><i data-lucide="zoom-out"></i><span>Diminuir zoom</span></button>
+          <button data-canvas-action="reset-view"><i data-lucide="maximize"></i><span>Centralizar 100%</span></button>
+          <button data-canvas-action="fit-view"><i data-lucide="scan-search"></i><span>Ajustar a tela</span></button>
+          <button data-canvas-action="toggle-grid"><i data-lucide="grid-2x2"></i><span>Mostrar grade</span></button>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="app.js"></script>
+    <p style="position:fixed; bottom:8px; right:12px; font-size:11px; color:#999; margin:0; z-index:9999;">designed by VM58</p>
+  </body>
+</html>
+

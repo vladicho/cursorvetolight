@@ -1,0 +1,30 @@
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Dependencias futuras
+node_modules/
+__pycache__/
+*.pyc
+
+# Builds futuros
+dist/
+build/
+
+# Artefatos locais de analise
+samples/
+
+# Dados locais (usuarios, sessoes)
+data/
+
+# Variáveis de ambiente (segredos)
+.env
+.env.*
+!.env.example
+
+# Build de producao (JS minificado)
+dist/
+
