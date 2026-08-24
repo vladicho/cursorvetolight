@@ -2,9 +2,18 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cursorvetolight",
   "compatibility_date": "2026-08-24",
+  "routes": [
+    {
+      "pattern": "lugarerrado.com/*",
+      "zone_name": "lugarerrado.com"
+    },
+    {
+      "pattern": "www.lugarerrado.com/*",
+      "zone_name": "lugarerrado.com"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   }
 }
-
