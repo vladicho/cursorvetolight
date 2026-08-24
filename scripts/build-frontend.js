@@ -4,8 +4,18 @@ const path = require("path");
 
 const root = path.join(__dirname, "..");
 const dist = path.join(root, "dist");
-const staticFiles = ["index.html", "tutorial.html", "tutorial-video.html", "styles.css", "skimage-worker.js"];
-const jsEntries = ["app.js"];
+const staticFiles = [
+  "index.html",
+  "login.html",
+  "admin.html",
+  "privacy.html",
+  "terms.html",
+  "tutorial.html",
+  "tutorial-video.html",
+  "styles.css",
+  "skimage-worker.js",
+];
+const jsEntries = ["app.js", "login.js", "admin.js"];
 
 async function build() {
   fs.rmSync(dist, { recursive: true, force: true });
@@ -37,7 +47,7 @@ async function build() {
       // Inject cache-busting version into JS and CSS references
       content = content
         .replace(/(href="styles\.css)(")/g, `$1?v=${version}$2`)
-        .replace(/(src="app\.js)(")/g, `$1?v=${version}$2`);
+        .replace(/(src="(?:app|login|admin)\.js)(")/g, `$1?v=${version}$2`);
     }
     fs.writeFileSync(path.join(dist, file), content);
   }

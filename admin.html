@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>MoldeLab - Administração</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="auth-page admin-page">
+    <main class="auth-shell admin-shell">
+      <section class="auth-card">
+        <header class="admin-header">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true">M</span>
+            <div>
+              <h1>Relação de logins</h1>
+              <p>Usuários que entraram com uma conta Google.</p>
+            </div>
+          </div>
+          <div class="admin-actions">
+            <a class="admin-link" href="/">Abrir editor</a>
+            <button id="refreshUsers" type="button">Atualizar</button>
+            <button id="adminLogout" type="button">Sair</button>
+          </div>
+        </header>
+
+        <div id="adminLoading" class="admin-loading">Carregando registros...</div>
+        <div id="adminPanel" hidden>
+          <div class="admin-summary" aria-label="Resumo">
+            <article><strong id="totalUsers">0</strong><span>usuários</span></article>
+            <article><strong id="totalLogins">0</strong><span>acessos</span></article>
+            <article><strong id="lastLogin">—</strong><span>último acesso</span></article>
+          </div>
+
+          <h2 class="admin-section-title">Usuários</h2>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Usuário</th><th>Cadastro</th><th>Último acesso</th><th>Acessos</th><th>Perfil</th></tr></thead>
+              <tbody id="usersTable"></tbody>
+            </table>
+          </div>
+
+          <h2 class="admin-section-title">Acessos recentes</h2>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>Usuário</th><th>Data e hora</th></tr></thead>
+              <tbody id="loginsTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p id="adminMessage" class="auth-message" role="alert" hidden></p>
+      </section>
+    </main>
+    <script src="admin.js"></script>
+  </body>
+</html>
+

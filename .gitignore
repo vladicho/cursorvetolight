@@ -24,6 +24,9 @@ data/
 .env
 .env.*
 !.env.example
+.dev.vars
+.config/
+.wrangler/
 
 # Build de producao (JS minificado)
 dist/

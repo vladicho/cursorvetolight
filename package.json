@@ -8,11 +8,15 @@
   },
   "scripts": {
     "build": "node scripts/build-frontend.js",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run build && npm run typecheck && wrangler deploy --dry-run",
     "deploy": "npm run build && wrangler deploy",
     "dev": "wrangler dev"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260823.1",
     "esbuild": "^0.25.8",
+    "typescript": "^5.9.2",
     "wrangler": "^4.33.1"
   }
 }

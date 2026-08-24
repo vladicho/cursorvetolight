@@ -97,6 +97,14 @@ body {
   color: var(--accent-dark);
 }
 
+.auth-privacy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
+}
+
 /* Divisor "ou" entre formulário e Google */
 .auth-divider {
   display: flex;
@@ -165,7 +173,23 @@ body {
 }
 
 .admin-shell {
-  width: min(720px, 100%);
+  width: min(1080px, 100%);
+}
+
+.admin-page {
+  place-items: start center;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-header .brand {
+  padding-bottom: 0;
 }
 
 .admin-actions {
@@ -217,6 +241,108 @@ body {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.admin-loading {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.admin-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.admin-summary article {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  background: #f7faf8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-summary strong {
+  font-size: 22px;
+  color: var(--accent-dark);
+}
+
+.admin-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  margin: 10px 0 24px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.admin-table th {
+  background: #f7faf8;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-user-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 230px;
+}
+
+.admin-user-identity img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eef3ef;
+}
+
+.admin-user-identity div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-user-identity span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .admin-summary {
+    grid-template-columns: 1fr;
+  }
 }
 
 button,
@@ -2347,5 +2473,27 @@ canvas {
 .btn-danger-outline:hover {
   background: #ef4444;
   color: #fff;
+}
+.legal-page {
+  min-height: 100vh;
+  margin: 0;
+  padding: 32px 16px;
+  background: #f4f6f8;
+  color: #17212b;
+}
+
+.legal-card {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(18, 35, 52, 0.08);
+  line-height: 1.65;
+}
+
+.legal-card h1,
+.legal-card h2 {
+  line-height: 1.2;
 }
 
