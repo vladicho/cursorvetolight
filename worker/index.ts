@@ -113,6 +113,20 @@ function adminEmails(env: Env): Set<string> {
   return new Set(env.ADMIN_EMAILS.split(",").map((email) => email.trim().toLowerCase()).filter(Boolean));
 }
 
+function allowedOrigins(env: Env): Set<string> {
+  return new Set(
+    [env.APP_ORIGIN, ...env.APP_ORIGINS.split(",")]
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+  );
+}
+
+function requestOrigin(request: Request, env: Env): string {
+  const origin = new URL(request.url).origin;
+  if (!allowedOrigins(env).has(origin)) throw new Error("Origem não autorizada.");
+  return origin;
+}
+
 function publicUser(user: UserRow) {
   return {
     id: user.id,
@@ -142,7 +156,7 @@ async function currentUser(request: Request, env: Env): Promise<UserRow | null> 
 
 function sameOrigin(request: Request, env: Env): boolean {
   const origin = request.headers.get("Origin");
-  return origin === env.APP_ORIGIN;
+  return origin !== null && origin === requestOrigin(request, env);
 }
 
 async function cleanupExpired(env: Env): Promise<void> {
@@ -159,6 +173,7 @@ async function startGoogleLogin(request: Request, env: Env, ctx: ExecutionContex
   }
 
   const url = new URL(request.url);
+  const origin = requestOrigin(request, env);
   const state = randomToken();
   const stateHash = await sha256(state);
   const verifier = randomToken(48);
@@ -175,7 +190,7 @@ async function startGoogleLogin(request: Request, env: Env, ctx: ExecutionContex
 
   const authorization = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   authorization.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
-  authorization.searchParams.set("redirect_uri", `${env.APP_ORIGIN}/auth/google/callback`);
+  authorization.searchParams.set("redirect_uri", `${origin}/auth/google/callback`);
   authorization.searchParams.set("response_type", "code");
   authorization.searchParams.set("scope", "openid email profile");
   authorization.searchParams.set("state", state);
@@ -188,6 +203,7 @@ async function startGoogleLogin(request: Request, env: Env, ctx: ExecutionContex
 
 async function googleCallback(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
+  const origin = requestOrigin(request, env);
   const providerError = url.searchParams.get("error");
   if (providerError) return redirect("/login.html?error=Entrada%20cancelada", 302, [clearCookie(OAUTH_COOKIE)]);
 
@@ -218,7 +234,7 @@ async function googleCallback(request: Request, env: Env, ctx: ExecutionContext)
       code,
       client_id: env.GOOGLE_CLIENT_ID,
       client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: `${env.APP_ORIGIN}/auth/google/callback`,
+      redirect_uri: `${origin}/auth/google/callback`,
       grant_type: "authorization_code",
       code_verifier: stored.code_verifier,
     }),
@@ -329,7 +345,7 @@ export default {
     }
 
     if (url.pathname.toLowerCase() === "/http" || url.pathname.toLowerCase() === "/https") {
-      return redirect(env.APP_ORIGIN, 308);
+      return redirect(url.origin, 308);
     }
 
     try {
@@ -385,4 +401,3 @@ export default {
     }
   },
 } satisfies ExportedHandler<Env>;
-
