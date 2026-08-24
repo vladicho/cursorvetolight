@@ -105,7 +105,8 @@ function safeNext(value: string | null): string {
     value.includes("\\") ||
     pathname === "/http" ||
     pathname === "/https"
-  ) return "/";
+  ) return "/index.html";
+  if (pathname === "/") return "/index.html";
   return value;
 }
 
@@ -389,6 +390,10 @@ export default {
         return secure(new Response("Acesso restrito ao administrador.", { status: 403 }));
       }
 
+      if (url.pathname === "/") {
+        const indexUrl = new URL("/index.html", url);
+        return secure(await env.ASSETS.fetch(new Request(indexUrl, request)));
+      }
       return secure(await env.ASSETS.fetch(request));
     } catch (error) {
       console.error(JSON.stringify({
