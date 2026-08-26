@@ -48,6 +48,19 @@
               <tbody id="loginsTable"></tbody>
             </table>
           </div>
+
+          <h2 class="admin-section-title">Biblioteca RAG de modelagem</h2>
+          <section class="rag-admin" aria-labelledby="ragUploadTitle">
+            <div>
+              <strong id="ragUploadTitle">PDFs para o AI Search</strong>
+              <p id="ragStatus">Verificando a biblioteca...</p>
+            </div>
+            <label class="rag-file-label" for="ragFiles">Selecionar PDFs</label>
+            <input id="ragFiles" type="file" accept="application/pdf,.pdf" multiple />
+            <button id="uploadRag" type="button">Enviar para o RAG</button>
+            <progress id="ragProgress" value="0" max="1" hidden></progress>
+            <ol id="ragUploadResults" class="rag-upload-results"></ol>
+          </section>
         </div>
 
         <p id="adminMessage" class="auth-message" role="alert" hidden></p>

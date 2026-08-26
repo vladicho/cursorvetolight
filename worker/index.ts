@@ -2,6 +2,8 @@ const SESSION_COOKIE = "__Host-moldelab_session";
 const OAUTH_COOKIE = "__Host-moldelab_oauth";
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
 const OAUTH_SECONDS = 60 * 10;
+const RAG_INSTANCE = "modelagem-vestuario";
+const MAX_RAG_FILE_BYTES = 4_000_000;
 const encoder = new TextEncoder();
 
 type UserRow = {
@@ -326,6 +328,77 @@ async function adminOverview(env: Env) {
   return json({ ok: true, users: usersResult.results, logins: loginsResult.results, summary });
 }
 
+async function ragInstance(env: Env) {
+  const instance = env.AI_SEARCH.get(RAG_INSTANCE);
+  try {
+    await instance.info();
+    return instance;
+  } catch {
+    return env.AI_SEARCH.create({
+      id: RAG_INSTANCE,
+      index_method: { vector: true, keyword: true },
+      chunk_size: 700,
+      chunk_overlap: 100,
+      max_num_results: 8,
+    });
+  }
+}
+
+async function adminRagStatus(env: Env): Promise<Response> {
+  const instance = env.AI_SEARCH.get(RAG_INSTANCE);
+  try {
+    const [info, stats] = await Promise.all([instance.info(), instance.stats()]);
+    return json({ ok: true, ready: true, instance: info, stats });
+  } catch {
+    return json({ ok: true, ready: false, instance: { id: RAG_INSTANCE } });
+  }
+}
+
+async function adminRagUpload(request: Request, env: Env): Promise<Response> {
+  if (!sameOrigin(request, env)) return json({ ok: false, error: "Origem inválida." }, 403);
+  const form = await request.formData();
+  const value = form.get("file");
+  if (!(value instanceof File)) return json({ ok: false, error: "Selecione um PDF." }, 400);
+  if (!value.name.toLowerCase().endsWith(".pdf") || value.type !== "application/pdf") {
+    return json({ ok: false, error: "Somente arquivos PDF são aceitos." }, 415);
+  }
+  if (value.size > MAX_RAG_FILE_BYTES) {
+    return json({ ok: false, error: "O PDF ultrapassa o limite de 4 MB do AI Search." }, 413);
+  }
+
+  const instance = await ragInstance(env);
+  const uploaded = await instance.items.upload(value.name, value);
+  return json({ ok: true, file: value.name, size: value.size, item: uploaded }, 202);
+}
+
+async function ragChat(request: Request, env: Env): Promise<Response> {
+  if (!sameOrigin(request, env)) return json({ ok: false, error: "Origem inválida." }, 403);
+  const body = await request.json<{ message?: unknown }>().catch((): { message?: unknown } => ({}));
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  if (!message) return json({ ok: false, error: "Escreva uma pergunta." }, 400);
+  if (message.length > 4_000) return json({ ok: false, error: "A pergunta é muito longa." }, 413);
+
+  const instance = env.AI_SEARCH.get(RAG_INSTANCE);
+  const response = await instance.chatCompletions({
+    messages: [
+      {
+        role: "system",
+        content: "Responda em português como especialista em modelagem e confecção do vestuário. Use somente a biblioteca recuperada, explique medidas e etapas com clareza, cite os nomes dos documentos consultados e diga explicitamente quando a biblioteca não sustentar uma afirmação.",
+      },
+      { role: "user", content: message },
+    ],
+    ai_search_options: {
+      retrieval: {
+        retrieval_type: "hybrid",
+        max_num_results: 8,
+        context_expansion: 1,
+      },
+      query_rewrite: { enabled: true },
+    },
+  });
+  return json({ ok: true, response });
+}
+
 function secure(response: Response): Response {
   const output = new Response(response.body, response);
   output.headers.set("X-Content-Type-Options", "nosniff");
@@ -389,6 +462,17 @@ export default {
       if (url.pathname === "/api/admin/overview") {
         if (user.role !== "admin") return secure(json({ ok: false, error: "Acesso restrito ao administrador." }, 403));
         return secure(await adminOverview(env));
+      }
+      if (url.pathname === "/api/admin/rag/status" && request.method === "GET") {
+        if (user.role !== "admin") return secure(json({ ok: false, error: "Acesso restrito ao administrador." }, 403));
+        return secure(await adminRagStatus(env));
+      }
+      if (url.pathname === "/api/admin/rag/upload" && request.method === "POST") {
+        if (user.role !== "admin") return secure(json({ ok: false, error: "Acesso restrito ao administrador." }, 403));
+        return secure(await adminRagUpload(request, env));
+      }
+      if (url.pathname === "/api/rag/chat" && request.method === "POST") {
+        return secure(await ragChat(request, env));
       }
       if (url.pathname === "/admin.html" && user.role !== "admin") {
         return secure(new Response("Acesso restrito ao administrador.", { status: 403 }));

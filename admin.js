@@ -3,6 +3,11 @@ const loading = document.querySelector("#adminLoading");
 const message = document.querySelector("#adminMessage");
 const usersTable = document.querySelector("#usersTable");
 const loginsTable = document.querySelector("#loginsTable");
+const ragFiles = document.querySelector("#ragFiles");
+const ragStatus = document.querySelector("#ragStatus");
+const ragProgress = document.querySelector("#ragProgress");
+const ragUploadResults = document.querySelector("#ragUploadResults");
+const uploadRag = document.querySelector("#uploadRag");
 
 function formatDate(value) {
   if (!value) return "—";
@@ -87,9 +92,63 @@ async function loadAdmin() {
   document.querySelector("#lastLogin").textContent = formatDate(data.summary.last_login_at);
   loading.hidden = true;
   panel.hidden = false;
+  loadRagStatus();
+}
+
+async function loadRagStatus() {
+  const response = await fetch("/api/admin/rag/status", { credentials: "same-origin" });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.ok) {
+    ragStatus.textContent = data.error || "Não foi possível verificar o RAG.";
+    return;
+  }
+  if (!data.ready) {
+    ragStatus.textContent = "A base modelagem-vestuario será criada no primeiro envio.";
+    return;
+  }
+  const indexed = data.stats?.indexed_items ?? data.stats?.total_items ?? data.stats?.items ?? "ativa";
+  ragStatus.textContent = `Base modelagem-vestuario: ${indexed} arquivo(s) indexado(s).`;
+}
+
+async function uploadRagFiles() {
+  const files = Array.from(ragFiles.files || []);
+  if (!files.length) {
+    ragStatus.textContent = "Selecione os PDFs preparados para indexação.";
+    return;
+  }
+  uploadRag.disabled = true;
+  ragProgress.hidden = false;
+  ragProgress.max = files.length;
+  ragProgress.value = 0;
+  ragUploadResults.replaceChildren();
+
+  for (const file of files) {
+    const item = document.createElement("li");
+    item.textContent = `${file.name}: enviando...`;
+    ragUploadResults.appendChild(item);
+    const form = new FormData();
+    form.append("file", file, file.name);
+    try {
+      const response = await fetch("/api/admin/rag/upload", {
+        method: "POST",
+        credentials: "same-origin",
+        body: form,
+      });
+      const data = await response.json().catch(() => ({}));
+      item.textContent = response.ok ? `${file.name}: recebido para indexação` : `${file.name}: ${data.error || "falha no envio"}`;
+      item.dataset.status = response.ok ? "ok" : "error";
+    } catch {
+      item.textContent = `${file.name}: falha de conexão`;
+      item.dataset.status = "error";
+    }
+    ragProgress.value += 1;
+  }
+  uploadRag.disabled = false;
+  await loadRagStatus();
 }
 
 document.querySelector("#refreshUsers").addEventListener("click", () => loadAdmin());
+uploadRag.addEventListener("click", uploadRagFiles);
 document.querySelector("#adminLogout").addEventListener("click", async () => {
   await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
   window.location.replace("/login.html");
