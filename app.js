@@ -4697,6 +4697,7 @@ setupMenuBehavior();
 window.addEventListener("load", refreshIcons);
 window.addEventListener("load", connectLocalScanner);
 window.addEventListener("load", initAuthUi);
+window.addEventListener("load", initAssistant);
 
 async function initAuthUi() {
   const userMenu = document.querySelector("#userMenu");
@@ -4730,6 +4731,206 @@ async function initAuthUi() {
   } catch {
     window.location.href = "/login.html";
   }
+}
+
+function initAssistant() {
+  const toggle = document.querySelector("#assistantToggle");
+  const panel = document.querySelector("#assistantPanel");
+  const close = document.querySelector("#assistantClose");
+  const form = document.querySelector("#assistantForm");
+  const input = document.querySelector("#assistantInput");
+  const fileInput = document.querySelector("#assistantFiles");
+  const attachments = document.querySelector("#assistantAttachments");
+  const messages = document.querySelector("#assistantMessages");
+  const send = document.querySelector("#assistantSend");
+  if (!toggle || !panel || !close || !form || !input || !fileInput || !attachments || !messages || !send) return;
+
+  const maxFiles = 3;
+  const maxFileBytes = 4_000_000;
+  const maxTotalBytes = 8_000_000;
+  const historyKey = "moldelab_assistant_history_v1";
+  let selectedFiles = [];
+  let history = [];
+  let busy = false;
+
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(historyKey) || "[]");
+    if (Array.isArray(stored)) history = stored.slice(-12).filter((item) =>
+      item && (item.role === "user" || item.role === "assistant") && typeof item.content === "string",
+    );
+  } catch {
+    history = [];
+  }
+
+  function persistHistory() {
+    try { sessionStorage.setItem(historyKey, JSON.stringify(history.slice(-12))); } catch { /* storage optional */ }
+  }
+
+  function setOpen(open) {
+    panel.hidden = !open;
+    toggle.setAttribute("aria-expanded", String(open));
+    if (open) {
+      input.focus();
+      messages.scrollTop = messages.scrollHeight;
+    }
+  }
+
+  function addMessage(role, content, sources = []) {
+    const article = document.createElement("article");
+    article.className = `assistant-message assistant-message-${role === "user" ? "user" : "bot"}`;
+    const avatar = document.createElement("div");
+    avatar.className = "assistant-avatar";
+    avatar.textContent = role === "user" ? "V" : "M";
+    const bubble = document.createElement("div");
+    bubble.className = "assistant-bubble";
+    bubble.textContent = content;
+    if (sources.length) {
+      const sourceLine = document.createElement("small");
+      sourceLine.className = "assistant-sources";
+      sourceLine.textContent = `Fontes: ${sources.join(", ")}`;
+      bubble.appendChild(sourceLine);
+    }
+    article.append(avatar, bubble);
+    messages.appendChild(article);
+    messages.scrollTop = messages.scrollHeight;
+    return article;
+  }
+
+  function renderAttachments() {
+    attachments.replaceChildren();
+    selectedFiles.forEach((file, index) => {
+      const chip = document.createElement("div");
+      chip.className = "assistant-attachment";
+      const icon = document.createElement("i");
+      icon.dataset.lucide = file.type.startsWith("image/") ? "image" : "file-text";
+      const name = document.createElement("span");
+      name.textContent = file.name;
+      name.title = file.name;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.setAttribute("aria-label", `Remover ${file.name}`);
+      remove.innerHTML = '<i data-lucide="x"></i>';
+      remove.addEventListener("click", () => {
+        selectedFiles.splice(index, 1);
+        renderAttachments();
+      });
+      chip.append(icon, name, remove);
+      attachments.appendChild(chip);
+    });
+    refreshIcons();
+  }
+
+  function resizeInput() {
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+  }
+
+  async function compressPhoto(file) {
+    if (!/^image\/(jpeg|png|webp|bmp)$/i.test(file.type)) return file;
+    if (typeof createImageBitmap !== "function") return file;
+    const bitmap = await createImageBitmap(file);
+    const maxDimension = 1600;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1 && file.size <= 1_500_000) {
+      bitmap.close();
+      return file;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+  }
+
+  toggle.addEventListener("click", () => setOpen(panel.hidden));
+  close.addEventListener("click", () => setOpen(false));
+  input.addEventListener("input", resizeInput);
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  fileInput.addEventListener("change", async () => {
+    const incoming = Array.from(fileInput.files || []);
+    fileInput.value = "";
+    for (const original of incoming) {
+      if (selectedFiles.length >= maxFiles) {
+        addMessage("assistant", `Você pode anexar no máximo ${maxFiles} arquivos por mensagem.`);
+        break;
+      }
+      try {
+        const file = await compressPhoto(original);
+        if (file.size > maxFileBytes) {
+          addMessage("assistant", `${original.name} ultrapassa o limite de 4 MB.`);
+          continue;
+        }
+        const total = selectedFiles.reduce((sum, item) => sum + item.size, 0) + file.size;
+        if (total > maxTotalBytes) {
+          addMessage("assistant", "Os anexos juntos ultrapassam o limite de 8 MB.");
+          break;
+        }
+        selectedFiles.push(file);
+      } catch {
+        addMessage("assistant", `Não consegui preparar ${original.name}.`);
+      }
+    }
+    renderAttachments();
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    const typed = input.value.trim();
+    if (!typed && !selectedFiles.length) return;
+    const filesForRequest = selectedFiles.slice();
+    const fileNames = filesForRequest.map((file) => file.name);
+    const userText = typed || "Analise os arquivos anexados e explique o que você identifica.";
+    addMessage("user", fileNames.length ? `${userText}\nAnexos: ${fileNames.join(", ")}` : userText);
+    input.value = "";
+    resizeInput();
+    selectedFiles = [];
+    renderAttachments();
+    busy = true;
+    send.disabled = true;
+    const loading = addMessage("assistant", "Analisando a biblioteca e os anexos...");
+    loading.classList.add("assistant-message-loading");
+
+    const payload = new FormData();
+    payload.append("message", userText);
+    payload.append("history", JSON.stringify(history.slice(-8)));
+    filesForRequest.forEach((file) => payload.append("files", file, file.name));
+
+    try {
+      const response = await fetch("/api/assistant/chat", {
+        method: "POST",
+        credentials: "same-origin",
+        body: payload,
+      });
+      const data = await response.json().catch(() => ({}));
+      loading.remove();
+      if (!response.ok || !data.ok) throw new Error(data.error || "O assistente não conseguiu responder.");
+      const answer = typeof data.answer === "string" ? data.answer : "Não recebi uma resposta legível.";
+      const sources = Array.isArray(data.sources) ? data.sources.filter((item) => typeof item === "string").slice(0, 6) : [];
+      addMessage("assistant", answer, sources);
+      history.push({ role: "user", content: userText }, { role: "assistant", content: answer });
+      history = history.slice(-12);
+      persistHistory();
+    } catch (error) {
+      loading.remove();
+      addMessage("assistant", error instanceof Error ? error.message : "Falha de conexão com o assistente.");
+      selectedFiles = filesForRequest;
+      renderAttachments();
+    } finally {
+      busy = false;
+      send.disabled = false;
+      input.focus();
+    }
+  });
 }
 
 setActiveGradeRow(activeGradeRowIndex);

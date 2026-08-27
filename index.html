@@ -406,9 +406,45 @@
       </section>
     </main>
 
+    <button id="assistantToggle" class="assistant-toggle" type="button" aria-controls="assistantPanel" aria-expanded="false">
+      <i data-lucide="message-circle"></i>
+      <span>Assistente</span>
+    </button>
+    <section id="assistantPanel" class="assistant-panel" aria-label="Assistente técnico de modelagem" hidden>
+      <header class="assistant-header">
+        <div>
+          <strong>Assistente MoldeLab</strong>
+          <small>Modelagem, graduação e encaixe</small>
+        </div>
+        <button id="assistantClose" type="button" aria-label="Fechar assistente"><i data-lucide="x"></i></button>
+      </header>
+      <div id="assistantMessages" class="assistant-messages" aria-live="polite">
+        <article class="assistant-message assistant-message-bot">
+          <div class="assistant-avatar">M</div>
+          <div class="assistant-bubble">
+            Olá! Envie uma foto da roupa, um molde ou um documento técnico. Também posso consultar a biblioteca de modelagem para explicar construção, graduação e encaixe.
+          </div>
+        </article>
+      </div>
+      <div id="assistantAttachments" class="assistant-attachments" aria-live="polite"></div>
+      <form id="assistantForm" class="assistant-form">
+        <label class="assistant-attach" for="assistantFiles" title="Anexar arquivos">
+          <i data-lucide="paperclip"></i>
+          <span class="sr-only">Anexar arquivos</span>
+        </label>
+        <input id="assistantFiles" type="file" multiple hidden
+          accept="image/*,.pdf,.docx,.xlsx,.xls,.csv,.odt,.ods,.txt,.md,.json,.xml,.html,.svg,.dxf,.plt,.hpgl" />
+        <textarea id="assistantInput" rows="1" maxlength="4000" placeholder="Pergunte ou descreva o que deseja criar..."></textarea>
+        <button id="assistantSend" class="assistant-send" type="submit" aria-label="Enviar mensagem">
+          <i data-lucide="send"></i>
+        </button>
+      </form>
+      <p class="assistant-note">Fotos precisam de uma medida de referência para gerar moldes em escala real.</p>
+    </section>
+
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="app.js"></script>
-    <p style="position:fixed; bottom:8px; right:12px; font-size:11px; color:#999; margin:0; z-index:9999;">designed by VM58</p>
+    <p class="designer-credit">designed by VM58</p>
   </body>
 </html>
 
