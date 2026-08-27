@@ -367,7 +367,10 @@ async function adminRagUpload(request: Request, env: Env): Promise<Response> {
   }
 
   const instance = await ragInstance(env);
-  const uploaded = await instance.items.upload(value.name, value);
+  // AI Search accepts binary documents as a ReadableStream. Passing the
+  // multipart File object itself leaves a Blob at the binding boundary.
+  const content = value.stream();
+  const uploaded = await instance.items.upload(value.name, content);
   return json({ ok: true, file: value.name, size: value.size, item: uploaded }, 202);
 }
 
