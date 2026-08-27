@@ -338,7 +338,7 @@ async function ragInstance(env: Env) {
       id: RAG_INSTANCE,
       index_method: { vector: true, keyword: true },
       chunk_size: 700,
-      chunk_overlap: 100,
+      chunk_overlap: 20,
       max_num_results: 8,
     });
   }
