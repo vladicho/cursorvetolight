@@ -2649,6 +2649,10 @@ canvas {
   line-height: 1.5;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+  cursor: text;
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .assistant-message-user .assistant-bubble {
@@ -2744,6 +2748,9 @@ canvas {
   font: inherit;
   font-size: 14px;
   line-height: 1.4;
+  -webkit-touch-callout: default;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .assistant-form textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12); }

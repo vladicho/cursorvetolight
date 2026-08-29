@@ -4617,6 +4617,10 @@ document.addEventListener("keydown", (event) => {
 
   const isTyping = isTypingTarget(event.target);
   const key = event.key.toLowerCase();
+  const selection = window.getSelection();
+  const hasTextSelection = Boolean(selection && !selection.isCollapsed);
+  if (isTyping) return;
+  if ((event.ctrlKey || event.metaKey) && key === "c" && hasTextSelection) return;
   if ((event.ctrlKey || event.metaKey) && key === "s") {
     event.preventDefault();
     saveProject();
@@ -4646,8 +4650,6 @@ document.addEventListener("keydown", (event) => {
     closeMenus();
     return;
   }
-  if (isTyping) return;
-
   const isUndo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z" && !event.shiftKey;
   const isRedo = (event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === "y" || (event.shiftKey && event.key.toLowerCase() === "z"));
   const isDelete = event.key === "Delete" || event.key === "Backspace";
